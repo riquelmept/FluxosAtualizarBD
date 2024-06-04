@@ -1,2 +1,3 @@
-# FluxosAtualizarBD
-O objetivo desses códigos são mais específicos onde o python faz tarefas rotineiras por mim, com o intuito de otimizar tempo e mão de obra. Ele baixa dados em um site específico de gestão de indicadores e movimenta para as pastas onde estão as bases de dados de um dashboard do power bi.
+## FluxosAtualizarBD
+
+O principal objetivo destes scripts é a intenção de automatizar etapas de coleta de dados (exportar arquivos xlsx, lançar dados em novos arquivos) e otimizar as demandas de trabalho quanto a atualização da base de dados de um arquivo '.pbi' (Power BI) da empresa em que atuo. Algumas dimensões são dos monitores e tela de notebook em que trabalho, portanto alguns comandos utilizados nos scripts de RPA podem não se aplicar nas mesmas coordenadas para outras telas. Recomenda-se o uso do script 'pegarposicao.py' para identificar as coordenadas corretas para a tela de seu computador.
