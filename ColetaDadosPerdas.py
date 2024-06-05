@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def processar_aba(df, vars_id, prefixo_col_data):
     """
@@ -58,8 +60,29 @@ def processar_todas_abas(caminho_arquivo, vars_id, prefixo_col_data):
         
     return df_unificado
 
+def agrupar_falhas(df):
+    """
+    Agrupa as falhas por planta, categoria e data, e conta o número de falhas.
+
+    Parâmetros:
+    df (DataFrame): O DataFrame com os dados das falhas.
+
+    Retorna:
+    DataFrame: O DataFrame agrupado com a contagem de falhas.
+    """
+    # Excluir a coluna 'Setor'
+    df = df.drop(columns=['Setor'])
+
+    df = df[df['Valor'] != 0]
+    
+    # Agrupar por planta, categoria e data, e contar o número de falhas
+    df_agrupado = df.groupby(['Planta', 'Categoria', 'Data']).size().reset_index(name='Contagem_Falhas')
+    
+    return df_agrupado
+
 tabela = pd.read_csv("arquivos.csv")
 print(tabela)
+arq_geral = pd.DataFrame()
 
 for linha in tabela.index:
     caminho_arquivo = tabela.loc[linha, "caminho_arq"]
@@ -69,3 +92,8 @@ for linha in tabela.index:
     caminho_arquivo_saida = tabela.loc[linha, "ttd_arq_caminho"]
     df_unificado.to_excel(caminho_arquivo_saida, index=False)
     print(df_unificado.head())
+
+    arq_geral = pd.concat([arq_geral, df_unificado], ignore_index= True)
+
+arq_geral = agrupar_falhas(arq_geral)
+arq_geral.to_excel('BD Quantidade de Paradas.xlsx')
