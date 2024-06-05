@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import tkinter as tk
 
 def processar_aba(df, vars_id, prefixo_col_data):
     """
@@ -85,15 +86,27 @@ print(tabela)
 arq_geral = pd.DataFrame()
 
 for linha in tabela.index:
-    caminho_arquivo = tabela.loc[linha, "caminho_arq"]
-    vars_id = ["Planta", "Setor", "Categoria"]
-    prefixo_colunas_data = "2024"
-    df_unificado = processar_todas_abas(caminho_arquivo, vars_id, prefixo_colunas_data)
-    caminho_arquivo_saida = tabela.loc[linha, "ttd_arq_caminho"]
-    df_unificado.to_excel(caminho_arquivo_saida, index=False)
-    print(df_unificado.head())
+    if tabela.loc[linha, 'planta'] != 'Geral':
+        caminho_arquivo = tabela.loc[linha, 'caminho_arq']
+        vars_id = ['Planta', 'Setor', 'Categoria']
+        prefixo_colunas_data = '2024'
+        df_unificado = processar_todas_abas(caminho_arquivo, vars_id, prefixo_colunas_data)
+        caminho_arquivo_saida = tabela.loc[linha, 'ttd_arq_caminho']
+        df_unificado.to_excel(caminho_arquivo_saida, index=False)
+        print(df_unificado.head())
 
-    arq_geral = pd.concat([arq_geral, df_unificado], ignore_index= True)
+        arq_geral = pd.concat([arq_geral, df_unificado], ignore_index=True)
+    else:
+        arq_geral = agrupar_falhas(arq_geral)
+        caminho_geral_saida = tabela.loc[linha, 'ttd_arq_caminho']
+        arq_geral.to_excel(caminho_geral_saida, index=False)
 
-arq_geral = agrupar_falhas(arq_geral)
-arq_geral.to_excel('BD Quantidade de Paradas.xlsx')
+# Criar a janela principal
+janela = tk.Tk()
+janela.title("Atualização Finalizada!")
+# Criar o rótulo com a mensagem
+mensagem = tk.Label(janela, text="Atualização Finalizada!", font=("Arial", 14))
+mensagem.pack(padx=10, pady=10)
+
+# Executar o loop principal da interface gráfica
+janela.mainloop()
