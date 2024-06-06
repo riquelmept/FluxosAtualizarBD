@@ -72,18 +72,18 @@ def agrupar_falhas(df):
     DataFrame: O DataFrame agrupado com a contagem de falhas.
     """
     # Excluir a coluna 'Setor'
-    df = df.drop(columns=['Departamento','Sistema', 'Ativo'])
+    df = df.drop(columns=['Data fim do Evento','Departamento','Sistema', 'Local de Instalação/Ativo','TAG','Descrição do Evento'])
 
     df = df[df['Duração'] != 0]
+    df['Data Início do Evento'] = pd.to_datetime(df['Data Início do Evento'], errors='coerce').dt.date
     
     # Agrupar por planta, categoria e data, e contar o número de falhas
-    df_agrupado = df.groupby(['Und', 'Caráter', 'Dia']).size().reset_index(name='Contagem_Falhas')
+    df_agrupado = df.groupby(['Unidade de Produção', 'Categoria', 'Data Início do Evento']).size().reset_index(name='Contagem_Falhas')
     
     return df_agrupado
 
 tabela = pd.read_csv("arquivos.csv")
 print(tabela)
-arq_geral = pd.DataFrame()
 
 for linha in tabela.index:
     if tabela.loc[linha, 'planta'] != 'Geral':
@@ -100,7 +100,33 @@ for linha in tabela.index:
         df_perdas.head()
         caminho_alternativo = tabela.loc[linha, 'ttd_arq_caminho']
         df_perdas.to_excel(caminho_alternativo, index = False)
+        df_perdas['Data Início do Evento'] = pd.to_datetime(df_perdas['Data Início do Evento'], errors='coerce').dt.date
         df_perdas.to_excel('BD Quantidade de Paradas.xlsx')
+
+df_perdas['Data Início do Evento'] = pd.to_datetime(df_perdas['Data Início do Evento'], errors='coerce')
+unique_combinations = df_perdas[['Unidade de Produção', 'Categoria']].drop_duplicates()
+new_rows_list = []
+
+for _, row in unique_combinations.iterrows():
+    unidade_producao = row['Unidade de Produção']
+    categoria = row['Categoria']
+    last_date = df_perdas[(df_perdas['Unidade de Produção'] == unidade_producao) & (df_perdas['Categoria'] == categoria)]['Data Início do Evento'].max()
+    future_dates = pd.date_range(start=last_date, periods=12, freq='MS')[1:]
+
+    #Criando novas linhas para preencher gráfico
+    new_rows = pd.DataFrame({
+        'Unidade de Produção': unidade_producao,
+        'Categoria': categoria,
+        'Data Início do Evento': future_dates,
+        'Contagem_Falhas': 0
+    })
+    
+    new_rows_list.append(new_rows)
+    new_rows_df = pd.concat(new_rows_list, ignore_index=True)
+    df_perdas = pd.concat([df_perdas, new_rows_df], ignore_index=True)
+    df_perdas = df_perdas.sort_values(['Unidade de Produção', 'Categoria', 'Data Início do Evento']).reset_index(drop=True)
+
+df_perdas.to_excel(caminho_alternativo, index = False)
 
 # Criar a janela principal
 janela = tk.Tk()
