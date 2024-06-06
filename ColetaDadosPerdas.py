@@ -72,12 +72,12 @@ def agrupar_falhas(df):
     DataFrame: O DataFrame agrupado com a contagem de falhas.
     """
     # Excluir a coluna 'Setor'
-    df = df.drop(columns=['Setor'])
+    df = df.drop(columns=['Departamento','Sistema', 'Ativo'])
 
-    df = df[df['Valor'] != 0]
+    df = df[df['Duração'] != 0]
     
     # Agrupar por planta, categoria e data, e contar o número de falhas
-    df_agrupado = df.groupby(['Planta', 'Categoria', 'Data']).size().reset_index(name='Contagem_Falhas')
+    df_agrupado = df.groupby(['Und', 'Caráter', 'Dia']).size().reset_index(name='Contagem_Falhas')
     
     return df_agrupado
 
@@ -94,12 +94,12 @@ for linha in tabela.index:
         caminho_arquivo_saida = tabela.loc[linha, 'ttd_arq_caminho']
         df_unificado.to_excel(caminho_arquivo_saida, index=False)
         print(df_unificado.head())
-
-        arq_geral = pd.concat([arq_geral, df_unificado], ignore_index=True)
     else:
-        arq_geral = agrupar_falhas(arq_geral)
-        caminho_geral_saida = tabela.loc[linha, 'ttd_arq_caminho']
-        arq_geral.to_excel(caminho_geral_saida, index=False)
+        df_perdas = pd.read_excel(tabela.loc[linha, 'caminho_arq'])
+        df_perdas = agrupar_falhas(df_perdas)
+        df_perdas.head()
+        caminho_alternativo = tabela.loc[linha, 'ttd_arq_caminho']
+        arq_geral.to_excel(caminho_alternativo, index = False)
 
 # Criar a janela principal
 janela = tk.Tk()
