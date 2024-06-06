@@ -21,13 +21,13 @@ def processar_aba(df, vars_id, prefixo_col_data):
     
     # Transformando o dataframe do formato largo para o longo (Unipivot)
     df_transformado = df.melt(id_vars=vars_id, value_vars=colunas_data,
-                              var_name="Data", value_name="Valor")
+                              var_name="Dia", value_name="Duração")
     
     # Convertendo a coluna 'Data'
-    df_transformado['Data'] = pd.to_datetime(df_transformado['Data'], errors='coerce').dt.date
+    df_transformado['Dia'] = pd.to_datetime(df_transformado['Dia'], errors='coerce').dt.date
 
     # Descartar qualquer linha que seja luna
-    df_transformado = df_transformado.dropna(subset=['Data'])
+    df_transformado = df_transformado.dropna(subset=['Dia'])
     
     return df_transformado
 
@@ -99,7 +99,8 @@ for linha in tabela.index:
         df_perdas = agrupar_falhas(df_perdas)
         df_perdas.head()
         caminho_alternativo = tabela.loc[linha, 'ttd_arq_caminho']
-        arq_geral.to_excel(caminho_alternativo, index = False)
+        df_perdas.to_excel(caminho_alternativo, index = False)
+        df_perdas.to_excel('BD Quantidade de Paradas.xlsx')
 
 # Criar a janela principal
 janela = tk.Tk()
